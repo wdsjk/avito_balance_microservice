@@ -28,7 +28,7 @@ public class BalanceControllerAdvice {
         );
     }
 
-    // Idea says that may produce NullPointerException but it won't. Trust me.
+    // Idea says that may produce NullPointerException, but it won't. Trust me.
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Reason> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         return ResponseEntity.badRequest().contentType(MediaType.APPLICATION_JSON).body(

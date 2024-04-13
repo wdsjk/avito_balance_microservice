@@ -4,14 +4,14 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import wdsjk.project.avitobalancemicroservice.dto.ShowRequest;
 import wdsjk.project.avitobalancemicroservice.dto.request.DepositRequest;
+import wdsjk.project.avitobalancemicroservice.dto.request.TransferRequest;
 import wdsjk.project.avitobalancemicroservice.dto.response.BalanceResponse;
 import wdsjk.project.avitobalancemicroservice.dto.request.WithdrawRequest;
+
 import wdsjk.project.avitobalancemicroservice.service.BalanceService;
 
 @RestController
@@ -28,5 +28,15 @@ public class BalanceController {
     @PostMapping("/withdraw")
     public ResponseEntity<BalanceResponse> withdraw(@RequestBody @Valid WithdrawRequest request) {
         return ResponseEntity.ok(balanceService.withdraw(request));
+    }
+
+    @PostMapping("/transfer")
+    public ResponseEntity<BalanceResponse> transfer(@RequestBody @Valid TransferRequest request) {
+        return ResponseEntity.ok(balanceService.transfer(request));
+    }
+
+    @GetMapping("/show")
+    public ResponseEntity<BalanceResponse> show(@RequestBody @Valid ShowRequest request) {
+        return ResponseEntity.ok(balanceService.show(request));
     }
 }

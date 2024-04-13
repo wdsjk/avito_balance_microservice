@@ -5,7 +5,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import wdsjk.project.avitobalancemicroservice.domain.Balance;
+import wdsjk.project.avitobalancemicroservice.dto.ShowRequest;
 import wdsjk.project.avitobalancemicroservice.dto.request.DepositRequest;
+import wdsjk.project.avitobalancemicroservice.dto.request.TransferRequest;
 import wdsjk.project.avitobalancemicroservice.dto.response.BalanceResponse;
 import wdsjk.project.avitobalancemicroservice.dto.request.WithdrawRequest;
 
@@ -41,13 +43,36 @@ public class BalanceService {
     @Transactional
     public BalanceResponse withdraw(WithdrawRequest request) {
         Balance balance = balanceRepository.findByUserId(request.userId()).orElseThrow(
-                () -> new UserNotFoundException(
-                        String.format("User with id: %s is not found!", request.userId())
-                )
+                () -> new UserNotFoundException(String.format("User with id: %s is not found!", request.userId()))
         );
 
         balance.setAmountOfMoney(balance.getAmountOfMoney().subtract(request.amountOfMoney()).setScale(2, RoundingMode.HALF_DOWN));
 
         return new BalanceResponse("Money has been successfully withdrew");
+    }
+
+    @Transactional
+    public BalanceResponse transfer(TransferRequest request) {
+        Balance balanceFrom = balanceRepository.findByUserId(request.userFromId()).orElseThrow(
+                () -> new UserNotFoundException(String.format("User with id: %s is not found!", request.userFromId()))
+        );
+        Balance balanceTo = balanceRepository.findByUserId(request.userToId()).orElseThrow(
+                () -> new UserNotFoundException(String.format("User with id: %s is not found!", request.userToId()))
+        );
+
+        balanceFrom.setAmountOfMoney(balanceFrom.getAmountOfMoney().subtract(request.amountOfMoney()).setScale(2, RoundingMode.HALF_DOWN));
+        balanceTo.setAmountOfMoney(balanceTo.getAmountOfMoney().add(request.amountOfMoney()).setScale(2, RoundingMode.HALF_DOWN));
+
+        return new BalanceResponse("Money has been successfully transferred");
+    }
+
+    public BalanceResponse show(ShowRequest request) {
+        return new BalanceResponse(
+                String.valueOf(
+                        balanceRepository.findByUserId(request.userId()).orElseThrow(
+                                () -> new UserNotFoundException(String.format("User with id: %s is not found!", request.userId()))
+                        ).getAmountOfMoney()
+                )
+        );
     }
 }
