@@ -36,7 +36,7 @@ public class BalanceController {
     }
 
     @GetMapping("/show")
-    public ResponseEntity<BalanceResponse> show(@RequestBody @Valid ShowRequest request) {
-        return ResponseEntity.ok(balanceService.show(request));
+    public ResponseEntity<BalanceResponse> show(@RequestBody @Valid ShowRequest request, @RequestParam(required = false) String currency) {
+        return ResponseEntity.ok(balanceService.show(request, currency));
     }
 }
