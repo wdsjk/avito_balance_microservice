@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import wdsjk.project.avitobalancemicroservice.dto.exception.Reason;
+import wdsjk.project.avitobalancemicroservice.exception.UserNotFoundException;
 
 @RestControllerAdvice
 public class BalanceControllerAdvice {
@@ -27,11 +28,18 @@ public class BalanceControllerAdvice {
         );
     }
 
-    // May produce NullPointerException! TODO: Need to think about this!
+    // Idea says that may produce NullPointerException but it won't. Trust me.
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Reason> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         return ResponseEntity.badRequest().contentType(MediaType.APPLICATION_JSON).body(
                 new Reason(e.getDetailMessageArguments()[1].toString())
+        );
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<Reason> handleUserNotFoundException(UserNotFoundException e) {
+        return ResponseEntity.badRequest().contentType(MediaType.APPLICATION_JSON).body(
+                new Reason(e.getMessage())
         );
     }
 }

@@ -11,6 +11,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Table(name = "balances")
 @Entity
 @NoArgsConstructor
@@ -26,5 +28,5 @@ public class Balance {
 
     @Column(nullable = false)
     @Min(value = 0)
-    private Double amountOfMoney;
+    private BigDecimal amountOfMoney;
 }

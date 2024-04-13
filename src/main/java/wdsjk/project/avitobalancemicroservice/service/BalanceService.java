@@ -12,9 +12,9 @@ import wdsjk.project.avitobalancemicroservice.dto.request.WithdrawRequest;
 import wdsjk.project.avitobalancemicroservice.exception.UserNotFoundException;
 import wdsjk.project.avitobalancemicroservice.repository.BalanceRepository;
 
+import java.math.RoundingMode;
 import java.util.UUID;
 
-// TODO: Need to figure out what to do about bad floating point arithmetic!
 @Service
 @RequiredArgsConstructor
 public class BalanceService {
@@ -24,14 +24,15 @@ public class BalanceService {
         Balance balance = balanceRepository.findByUserId(request.userId()).orElse(null);
 
         if (null != balance) {
-            balance.setAmountOfMoney(balance.getAmountOfMoney() + request.amountOfMoney());
+            balance.setAmountOfMoney(balance.getAmountOfMoney().add(request.amountOfMoney()).setScale(2, RoundingMode.HALF_DOWN));
         } else {
             balance = Balance.builder()
                         .id(UUID.randomUUID().toString())
                         .userId(request.userId())
-                        .amountOfMoney(request.amountOfMoney())
+                        .amountOfMoney(request.amountOfMoney().setScale(2, RoundingMode.HALF_DOWN))
                     .build();
         }
+
         balanceRepository.save(balance);
 
         return new BalanceResponse("Money has been successfully deposited");
@@ -45,7 +46,7 @@ public class BalanceService {
                 )
         );
 
-        balance.setAmountOfMoney(balance.getAmountOfMoney() - request.amountOfMoney());
+        balance.setAmountOfMoney(balance.getAmountOfMoney().subtract(request.amountOfMoney()).setScale(2, RoundingMode.HALF_DOWN));
 
         return new BalanceResponse("Money has been successfully withdrew");
     }
