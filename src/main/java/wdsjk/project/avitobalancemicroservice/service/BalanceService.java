@@ -2,6 +2,8 @@ package wdsjk.project.avitobalancemicroservice.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
@@ -16,7 +18,6 @@ import wdsjk.project.avitobalancemicroservice.exception.InternalErrorException;
 import wdsjk.project.avitobalancemicroservice.exception.UserNotFoundException;
 import wdsjk.project.avitobalancemicroservice.repository.BalanceRepository;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.*;
@@ -88,15 +89,18 @@ public class BalanceService {
                                 "currencies=%s", currency)
                 )).build();
 
-                HttpResponse<String> response = client.send(req, HttpResponse.BodyHandlers.ofString());
+                String response = client
+                        .sendAsync(req, HttpResponse.BodyHandlers.ofString()) // sending request
+                        .thenApply(HttpResponse::body) // getting body
+                        .join(); // returning value on complete
 
-                JSONObject jsonObject = new JSONObject(response.body());
+                JSONObject jsonObject = new JSONObject(response);
 
                 if (!jsonObject.isNull("data"))
                     // TODO: Redis for caching exchange rates
                     amount = amount.multiply(jsonObject.getJSONObject("data").getBigDecimal(currency)).setScale(2, RoundingMode.HALF_DOWN);
-            } catch (InterruptedException | IOException e) {
-                throw new InternalErrorException("Something went wrong on the server side! Please, try again later");
+            } catch (JSONException e) {
+                throw new InternalErrorException();
             }
         }
 
