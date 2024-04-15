@@ -1,13 +1,8 @@
 package wdsjk.project.avitobalancemicroservice.service;
 
-import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.util.JSONPObject;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
-import org.springframework.boot.jackson.JsonObjectDeserializer;
 import org.springframework.stereotype.Service;
 
 import wdsjk.project.avitobalancemicroservice.domain.Balance;
@@ -21,20 +16,15 @@ import wdsjk.project.avitobalancemicroservice.exception.InternalErrorException;
 import wdsjk.project.avitobalancemicroservice.exception.UserNotFoundException;
 import wdsjk.project.avitobalancemicroservice.repository.BalanceRepository;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.net.*;
+
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
