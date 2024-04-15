@@ -14,6 +14,8 @@ import wdsjk.project.avitobalancemicroservice.dto.request.WithdrawRequest;
 
 import wdsjk.project.avitobalancemicroservice.service.BalanceService;
 
+import java.io.IOException;
+
 @RestController
 @RequestMapping("/api/v1/balance")
 @RequiredArgsConstructor

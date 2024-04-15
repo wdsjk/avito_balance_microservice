@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import wdsjk.project.avitobalancemicroservice.dto.exception.Reason;
+import wdsjk.project.avitobalancemicroservice.exception.InternalErrorException;
 import wdsjk.project.avitobalancemicroservice.exception.UserNotFoundException;
 
 @RestControllerAdvice
@@ -39,6 +40,13 @@ public class BalanceControllerAdvice {
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<Reason> handleUserNotFoundException(UserNotFoundException e) {
         return ResponseEntity.badRequest().contentType(MediaType.APPLICATION_JSON).body(
+                new Reason(e.getMessage())
+        );
+    }
+
+    @ExceptionHandler(InternalErrorException.class)
+    public ResponseEntity<Reason> handleInternalErrorException(InternalErrorException e) {
+        return ResponseEntity.internalServerError().contentType(MediaType.APPLICATION_JSON).body(
                 new Reason(e.getMessage())
         );
     }
