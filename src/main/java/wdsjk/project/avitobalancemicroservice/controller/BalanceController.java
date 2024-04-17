@@ -6,13 +6,16 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import wdsjk.project.avitobalancemicroservice.dto.ShowRequest;
+import wdsjk.project.avitobalancemicroservice.dto.request.ShowAndTransactionRequest;
 import wdsjk.project.avitobalancemicroservice.dto.request.DepositRequest;
 import wdsjk.project.avitobalancemicroservice.dto.request.TransferRequest;
 import wdsjk.project.avitobalancemicroservice.dto.response.BalanceResponse;
 import wdsjk.project.avitobalancemicroservice.dto.request.WithdrawRequest;
 
+import wdsjk.project.avitobalancemicroservice.dto.response.TransactionResponse;
 import wdsjk.project.avitobalancemicroservice.service.BalanceService;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/balance")
@@ -36,7 +39,16 @@ public class BalanceController {
     }
 
     @GetMapping("/show")
-    public ResponseEntity<BalanceResponse> show(@RequestBody @Valid ShowRequest request, @RequestParam(required = false) String currency) {
+    public ResponseEntity<BalanceResponse> show(@RequestBody @Valid ShowAndTransactionRequest request,
+                                                @RequestParam(required = false) String currency) {
         return ResponseEntity.ok(balanceService.show(request, currency));
+    }
+
+    @GetMapping("/transactions")
+    public ResponseEntity<List<TransactionResponse>> transactions(@RequestBody @Valid ShowAndTransactionRequest request,
+                                                                  @RequestParam(defaultValue = "0") Integer offset,
+                                                                  @RequestParam(defaultValue = "10") Integer limit,
+                                                                  @RequestParam(required = false) String sortedBy) {
+        return ResponseEntity.ok(balanceService.transactions(request, offset, limit, sortedBy));
     }
 }

@@ -5,20 +5,24 @@ import lombok.RequiredArgsConstructor;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import wdsjk.project.avitobalancemicroservice.domain.Balance;
-import wdsjk.project.avitobalancemicroservice.dto.ShowRequest;
+import wdsjk.project.avitobalancemicroservice.domain.Transaction;
+
+import wdsjk.project.avitobalancemicroservice.dto.request.ShowAndTransactionRequest;
 import wdsjk.project.avitobalancemicroservice.dto.request.DepositRequest;
 import wdsjk.project.avitobalancemicroservice.dto.request.TransferRequest;
 import wdsjk.project.avitobalancemicroservice.dto.response.BalanceResponse;
 import wdsjk.project.avitobalancemicroservice.dto.request.WithdrawRequest;
 
+import wdsjk.project.avitobalancemicroservice.dto.response.TransactionResponse;
 import wdsjk.project.avitobalancemicroservice.exception.InternalErrorException;
 import wdsjk.project.avitobalancemicroservice.exception.UserNotFoundException;
+
 import wdsjk.project.avitobalancemicroservice.repository.BalanceRepository;
+import wdsjk.project.avitobalancemicroservice.repository.TransactionRepository;
 import wdsjk.project.avitobalancemicroservice.service.BalanceService;
 
 import java.math.BigDecimal;
@@ -28,6 +32,8 @@ import java.net.*;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -35,6 +41,8 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class BalanceServiceImpl implements BalanceService {
     private final BalanceRepository balanceRepository;
+    private final TransactionRepository transactionRepository;
+
     private final RedisTemplate<String, BigDecimal> redisTemplate;
 
     @Override
@@ -52,6 +60,16 @@ public class BalanceServiceImpl implements BalanceService {
         }
 
         balanceRepository.save(balance);
+        transactionRepository.save(
+                Transaction.builder()
+                        .id(UUID.randomUUID().toString())
+                        .userFromId(request.userId())
+                        .userToId(request.userId())
+                        .amount(request.amountOfMoney())
+                        .date(new Date())
+                        .comments("Deposit or withdraw to or from user's account")
+                        .build()
+        );
 
         return new BalanceResponse("Money has been successfully deposited");
     }
@@ -64,6 +82,16 @@ public class BalanceServiceImpl implements BalanceService {
         );
 
         balance.setAmountOfMoney(balance.getAmountOfMoney().subtract(request.amountOfMoney()).setScale(2, RoundingMode.HALF_DOWN));
+        transactionRepository.save(
+                Transaction.builder()
+                        .id(UUID.randomUUID().toString())
+                        .userFromId(request.userId())
+                        .userToId(request.userId())
+                        .amount(request.amountOfMoney())
+                        .date(new Date())
+                        .comments("Deposit or withdraw to or from user's account")
+                        .build()
+        );
 
         return new BalanceResponse("Money has been successfully withdrew");
     }
@@ -80,12 +108,22 @@ public class BalanceServiceImpl implements BalanceService {
 
         balanceFrom.setAmountOfMoney(balanceFrom.getAmountOfMoney().subtract(request.amountOfMoney()).setScale(2, RoundingMode.HALF_DOWN));
         balanceTo.setAmountOfMoney(balanceTo.getAmountOfMoney().add(request.amountOfMoney()).setScale(2, RoundingMode.HALF_DOWN));
+        transactionRepository.save(
+                Transaction.builder()
+                        .id(UUID.randomUUID().toString())
+                        .userFromId(request.userFromId())
+                        .userToId(request.userToId())
+                        .amount(request.amountOfMoney())
+                        .date(new Date())
+                        .comments("Transfer money between users' accounts")
+                        .build()
+        );
 
         return new BalanceResponse("Money has been successfully transferred");
     }
 
     @Override
-    public BalanceResponse show(ShowRequest request, String currency) {
+    public BalanceResponse show(ShowAndTransactionRequest request, String currency) {
         BigDecimal amount = balanceRepository.findByUserId(request.userId()).orElseThrow(
                 () -> new UserNotFoundException(String.format("User with id: %s is not found!", request.userId()))
         ).getAmountOfMoney();
@@ -129,5 +167,10 @@ public class BalanceServiceImpl implements BalanceService {
         }
 
         return new BalanceResponse(String.valueOf(amount));
+    }
+
+    @Override
+    public List<TransactionResponse> transactions(ShowAndTransactionRequest request, Integer offset, Integer limit, String sortedBy) {
+        return null; // I'm done for today
     }
 }
