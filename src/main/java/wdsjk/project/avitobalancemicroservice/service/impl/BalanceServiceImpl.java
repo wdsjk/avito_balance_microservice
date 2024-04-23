@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -14,10 +16,11 @@ import wdsjk.project.avitobalancemicroservice.domain.Transaction;
 import wdsjk.project.avitobalancemicroservice.dto.request.ShowAndTransactionRequest;
 import wdsjk.project.avitobalancemicroservice.dto.request.DepositRequest;
 import wdsjk.project.avitobalancemicroservice.dto.request.TransferRequest;
-import wdsjk.project.avitobalancemicroservice.dto.response.BalanceResponse;
 import wdsjk.project.avitobalancemicroservice.dto.request.WithdrawRequest;
 
+import wdsjk.project.avitobalancemicroservice.dto.response.BalanceResponse;
 import wdsjk.project.avitobalancemicroservice.dto.response.TransactionResponse;
+
 import wdsjk.project.avitobalancemicroservice.exception.InternalErrorException;
 import wdsjk.project.avitobalancemicroservice.exception.UserNotFoundException;
 
@@ -36,6 +39,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -170,7 +174,20 @@ public class BalanceServiceImpl implements BalanceService {
     }
 
     @Override
-    public List<TransactionResponse> transactions(ShowAndTransactionRequest request, Integer offset, Integer limit, String sortedBy) {
-        return null; // I'm done for today
+    public List<TransactionResponse> transactions(ShowAndTransactionRequest request, Integer offset, Integer limit, String orderBy) {
+        // didn't get how `pageNumber` of PageRequest.of() works, but it's alright, i guess...
+        List<Transaction> transactions = transactionRepository.findAllByUserId(request.userId(), PageRequest.of(offset, limit, Sort.by(orderBy))).orElseThrow(
+                InternalErrorException::new
+        );
+
+        return transactions.stream().map(
+                transaction -> TransactionResponse.builder()
+                        .userFromId(transaction.getUserFromId())
+                        .userToId(transaction.getUserToId())
+                        .amount(transaction.getAmount())
+                        .date(transaction.getDate())
+                        .comments(transaction.getComments())
+                        .build()
+        ).collect(Collectors.toList());
     }
 }
