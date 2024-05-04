@@ -175,9 +175,8 @@ public class BalanceServiceImpl implements BalanceService {
     }
 
     @Override
-    public List<TransactionResponse> transactions(ShowAndTransactionRequest request, Integer offset, Integer limit, String orderBy) {
-        // didn't get how `pageNumber` of PageRequest.of() works, but it's alright, i guess...
-        List<Transaction> transactions = transactionRepository.findAllByUserId(request.userId(), PageRequest.of(offset, limit, Sort.by(orderBy))).orElseThrow(
+    public List<TransactionResponse> transactions(ShowAndTransactionRequest request, Integer limit, String orderBy) {
+        List<Transaction> transactions = transactionRepository.findAllByUserId(request.userId(), PageRequest.of(0, limit, Sort.by(orderBy))).orElseThrow(
                 InternalErrorException::new
         );
 

@@ -47,9 +47,8 @@ public class BalanceController {
 
     @GetMapping("/transactions")
     public ResponseEntity<List<TransactionResponse>> transactions(@RequestBody @Valid ShowAndTransactionRequest request,
-                                                                  @RequestParam(defaultValue = "0") Integer offset,
                                                                   @RequestParam(defaultValue = "10") Integer limit,
                                                                   @RequestParam(defaultValue = "amount") String orderBy) {
-        return ResponseEntity.ok(balanceService.transactions(request, offset, limit, orderBy));
+        return ResponseEntity.ok(balanceService.transactions(request, limit, orderBy));
     }
 }

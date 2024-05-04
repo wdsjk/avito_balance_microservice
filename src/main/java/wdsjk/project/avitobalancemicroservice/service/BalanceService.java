@@ -20,5 +20,5 @@ public interface BalanceService {
 
     BalanceResponse show(ShowAndTransactionRequest request, String currency);
 
-    List<TransactionResponse> transactions(ShowAndTransactionRequest request, Integer offset, Integer limit, String sortedBy);
+    List<TransactionResponse> transactions(ShowAndTransactionRequest request, Integer limit, String sortedBy);
 }
