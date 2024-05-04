@@ -3,10 +3,8 @@ package wdsjk.project.avitobalancemicroservice.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.json.JSONObject;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -15,12 +13,10 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import org.springframework.transaction.TransactionSystemException;
-import wdsjk.project.avitobalancemicroservice.domain.Balance;
 import wdsjk.project.avitobalancemicroservice.dto.exception.Reason;
 import wdsjk.project.avitobalancemicroservice.dto.request.DepositRequest;
 import wdsjk.project.avitobalancemicroservice.dto.request.WithdrawRequest;
 import wdsjk.project.avitobalancemicroservice.dto.response.BalanceResponse;
-import wdsjk.project.avitobalancemicroservice.repository.BalanceRepository;
 import wdsjk.project.avitobalancemicroservice.service.BalanceService;
 
 import java.math.BigDecimal;
@@ -74,23 +70,23 @@ class BalanceControllerTest {
         String requestBlankUserId = objectMapper.writeValueAsString(
                 new DepositRequest("", BigDecimal.valueOf(1000.15))
         );
+        String requestMoreThanOnBalance = objectMapper.writeValueAsString(
+                new DepositRequest("123", BigDecimal.valueOf(-1000))
+        );
         // using JSONObject.stringToValue because DepositRequest constructor doesn't allow to put int in userId field
         String requestInvalidDataType = objectMapper.writeValueAsString(
                 JSONObject.stringToValue("{userId: 12, amountOfMoney: 1000.15}")
-        );
-        String requestMoreThanOnBalance = objectMapper.writeValueAsString(
-                new DepositRequest("123", BigDecimal.valueOf(-1000))
         );
 
         // responses
         String responseBlankUserId = objectMapper.writeValueAsString(
                 new Reason("userId: Can't be blank!")
         );
-        String responseInvalidDataType = objectMapper.writeValueAsString(
-                new Reason("Invalid data type!")
-        );
         String responseMoreThanOnBalance = objectMapper.writeValueAsString(
                 new Reason("You're trying to withdraw more than is in your account!")
+        );
+        String responseInvalidDataType = objectMapper.writeValueAsString(
+                new Reason("Invalid data type!")
         );
 
         // performing balanceService work
@@ -103,16 +99,16 @@ class BalanceControllerTest {
                 .andExpect(content().string(responseBlankUserId))
                 .andDo(System.out::print);
 
-        mockMvc.perform(post(DEFAULT_PATH + "/deposit").contentType(MediaType.APPLICATION_JSON).content(requestInvalidDataType))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(content().string(responseInvalidDataType))
-                .andDo(System.out::print);
-
         mockMvc.perform(post(DEFAULT_PATH + "/deposit").contentType(MediaType.APPLICATION_JSON).content(requestMoreThanOnBalance))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().string(responseMoreThanOnBalance))
+                .andDo(System.out::print);
+
+        mockMvc.perform(post(DEFAULT_PATH + "/deposit").contentType(MediaType.APPLICATION_JSON).content(requestInvalidDataType))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().string(responseInvalidDataType))
                 .andDo(System.out::print);
     }
 
@@ -128,6 +124,48 @@ class BalanceControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().string(response))
+                .andDo(System.out::print);
+    }
+
+    @Test
+    public void testWithdrawShouldReturnBadRequest400() throws Exception {
+        String requestBlankUserId = objectMapper.writeValueAsString(
+                new WithdrawRequest("", BigDecimal.valueOf(100))
+        );
+        String requestInvalidAmountOfMoney = objectMapper.writeValueAsString(
+                new WithdrawRequest("123", BigDecimal.valueOf(-1))
+        );
+        // using JSONObject.stringToValue because WithdrawRequest constructor doesn't allow to put int in userId field
+        String requestInvalidDataType = objectMapper.writeValueAsString(
+                JSONObject.stringToValue("{userId: 12, amountOfMoney: 100}")
+        );
+
+        String responseBlankUserId = objectMapper.writeValueAsString(
+                new Reason("userId: Can't be blank!")
+        );
+        String responseInvalidAmountOfMoney = objectMapper.writeValueAsString(
+                new Reason("amountOfMoney: Can't be negative or equals to 0!")
+        );
+        String responseInvalidDataType = objectMapper.writeValueAsString(
+                new Reason("Invalid data type!")
+        );
+
+        mockMvc.perform(post(DEFAULT_PATH + "/withdraw").contentType(MediaType.APPLICATION_JSON).content(requestBlankUserId))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().string(responseBlankUserId))
+                .andDo(System.out::print);
+
+        mockMvc.perform(post(DEFAULT_PATH + "/withdraw").contentType(MediaType.APPLICATION_JSON).content(requestInvalidAmountOfMoney))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().string(responseInvalidAmountOfMoney))
+                .andDo(System.out::print);
+
+        mockMvc.perform(post(DEFAULT_PATH + "/withdraw").contentType(MediaType.APPLICATION_JSON).content(requestInvalidDataType))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().string(responseInvalidDataType))
                 .andDo(System.out::print);
     }
 }
