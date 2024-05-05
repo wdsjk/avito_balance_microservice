@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -136,7 +137,8 @@ public class BalanceServiceImpl implements BalanceService {
         if (null != currency) {
             BigDecimal exchangeRate = redisTemplate.opsForValue().get(currency);
             if (null == exchangeRate) {
-                try (HttpClient client = HttpClient.newBuilder().build()) {
+                try {
+                    HttpClient client = HttpClient.newBuilder().build();
                     HttpRequest req = HttpRequest
                             .newBuilder(
                                 URI.create(
@@ -147,7 +149,7 @@ public class BalanceServiceImpl implements BalanceService {
                             )
                             .header(
                                     "apikey", "fca_live_B2FeYk8cwUtZhT2Q0CNSZSfuswYpsLMk3yfMwTQb" // api-key from https://freecurrencyapi.com
-                                                            // (better it was in some environment variable but for learning purposes it's okay)
+                                                            // (better if it was in some environment variable but for learning purposes it's okay)
                             )
                             .build();
 
